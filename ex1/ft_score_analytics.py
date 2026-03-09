@@ -3,8 +3,8 @@ import sys
 if __name__ == "__main__":
     print("=== Player Score Analytics ===")
     if (len(sys.argv) == 1):
-        print("No scores provided. Usage:", end=" ")
-        print("python3 ft_score_analytics.py <score1> <score2> ...")
+        print("No scores provided. Usage:"
+            "python3 ft_score_analytics.py <score1> <score2> ...")
     else:
         scores = []
         try:
