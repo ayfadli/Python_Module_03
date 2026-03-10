@@ -1,21 +1,13 @@
 import sys
 
 def bubble_sort(my_list: list) -> list:
-    """Sorts a list of numbers in ascending order using bubble sort."""
+    """Sorts a list of dictionaries in descending order by quantity using bubble sort."""
     n = len(my_list)
-
     for i in range(n):
-        for j in range(0, n - 1):
+        for j in range(0, n - i - 1):
             if my_list[j]['qty'] < my_list[j + 1]['qty']:
                 my_list[j], my_list[j + 1] = my_list[j + 1], my_list[j]
-
     return my_list
-
-def dict_lookup(list_of_dic: list, value: str) -> bool:
-    for item_name, item_details in list_of_dic:
-        if item_name == value:
-            return True
-    return False
 
 def main() -> None:
     """Run the inventory system demonstration."""
@@ -23,90 +15,76 @@ def main() -> None:
     print("\n=== Alice's Inventory ===")
 
     inventory = dict()
-    unique_items = set()
-    global sum_of_qty
     sum_of_qty = 0
 
-
     args = sys.argv[1:]
-    try:
-        for i, arg in enumerate(args):
-
+    
+    for i, arg in enumerate(args):
+        try:
             name, qty_str = arg.split(':')
-            current_qty = inventory.get(name, {}).get("qty", 0)
+            added_qty = int(qty_str)
 
-            new_qty = current_qty + int(qty_str)
-            new_item = {name: {
-                        "qty": new_qty,
-                        "index": i
-                            }
-                        }
+            current_qty = inventory.get(name, {}).get("qty", 0)
+            new_qty = current_qty + added_qty
+            
+            new_item = {
+                name: {
+                    "qty": new_qty,
+                    "index": i
+                }
+            }
             inventory.update(new_item)
-            sum_of_qty += int(qty_str)
-            unique_items.add(name)
-    except Exception as e:
-        print(e)
+            sum_of_qty += added_qty
+        except Exception:
+            print(f"Warning: Invalid format for '{arg}'. Expected name:qty.")
 
     print(f"Total items in inventory: {sum_of_qty}")
-    print(f"Unique item types: {len(unique_items)}\n")
+    print(f"Unique item types: {len(inventory.keys())}\n")
 
     print("=== Current Inventory ===")
-
+    
     sorted_inventory = []
-
+    
     for item_name, item_details in inventory.items():
         single_item_dict = {"name": item_name}
         single_item_dict.update(item_details)
         sorted_inventory.append(single_item_dict)
+        
     sorted_inventory = bubble_sort(sorted_inventory)
 
     for item in sorted_inventory:
         qty = item["qty"]
         name = item["name"]
-
+        
         str_output = f"{name}: {qty}"
         str_output += " units" if qty > 1 else " unit"
-        str_output += f" ({(qty / sum_of_qty * 100):.1f}%)"
-        print(f"{str_output}")
-
+        if sum_of_qty > 0:
+            str_output += f" ({(qty / sum_of_qty * 100):.1f}%)"
+        print(str_output)
 
     print("\n=== Inventory Statistics ===")
-    most = None
-    least = None
-    if sorted_inventory != []:
+    if len(sorted_inventory) > 0:
         most = sorted_inventory[0]
         least = sorted_inventory[-1]
         print(f"Most abundant: {most['name']} ({most['qty']} {'units' if most['qty'] > 1 else 'unit'})")
         print(f"Least abundant: {least['name']} ({least['qty']} {'units' if least['qty'] > 1 else 'unit'})")
 
     print("\n=== Item Categories ===")
-    moderate_items = []
-    scarce_items = []
+    moderate_items = dict()
+    scarce_items = dict()
 
     for item in sorted_inventory:
-        if item['qty'] >= 5:
-            moderate_items.append(item)
+        name = item['name']
+        qty = item['qty']
+        if qty >= 5:
+            moderate_items.update({name: qty})
         else:
-            scarce_items.append(item)
+            scarce_items.update({name: qty})
 
-    print("Moderate: ", end="")
-    print("{", end="")
-    for item in moderate_items:
-        if item != moderate_items[-1]:
-            print(f"'{item['name']}': {item['qty']}", end=", ")
-        else:
-            print(f"'{item['name']}': {item['qty']}", end = "")
-    print("}")
-    print(f"Scarce: ", end="")
-    print("{", end="")
-    for item in scarce_items:
-        if item != scarce_items[-1]:
-            print(f"'{item['name']}': {item['qty']}", end = ", ")
-        else:
-            print(f"'{item['name']}': {item['qty']}", end="")
-    print("}")
-    print()
-    print("=== Management Suggestions ===")
+    print(f"Moderate: {moderate_items}")
+    print(f"Scarce: {scarce_items}")
+
+    print("\n=== Management Suggestions ===")
     print("Restock needed: ", end="")
     first = True
     for item in sorted_inventory:
@@ -117,24 +95,29 @@ def main() -> None:
             else:
                 print(f", {item['name']}", end="")
     print()
+
     print("\n=== Dictionary Properties Demo ===")
+    
     print("Dictionary keys: ", end="")
-    items = list(inventory.items())
-    for item in items:
-        item_name, item_details = item
-        if item != items[-1]:
-            print(item_name, end = ", ")
-        else:
-            print(item_name, end = "")
+    first = True
+    for key in inventory.keys():
+        if not first:
+            print(", ", end="")
+        print(key, end="")
+        first = False
     print()
+    
     print("Dictionary values: ", end="")
-    for item in items:
-        item_name, item_details = item
-        if item != items[-1]:
-            print(item_details['qty'], end = ", ")
-        else:
-            print(item_details['qty'], end = "")
+    first = True
+    for val in inventory.values():
+        if not first:
+            print(", ", end="")
+        print(val.get('qty', 0), end="") 
+        first = False
     print()
-    print(f"Sample lookup - 'sword' in inventory: {dict_lookup(inventory.items(), 'sword')}")
+
+    is_sword_present = 'sword' in inventory
+    print(f"\nSample lookup - 'sword' in inventory: {is_sword_present}")
+
 if __name__ == "__main__":
     main()
